@@ -1,5 +1,10 @@
 import { create, StateCreator } from 'zustand'
-import { persist, StateStorage, createJSONStorage } from 'zustand/middleware'
+import {
+  persist,
+  StateStorage,
+  createJSONStorage,
+  devtools,
+} from 'zustand/middleware'
 import { jsonStorage } from './storage/custom-session-storage'
 
 type AppState = {
@@ -16,18 +21,40 @@ type AppActions = {
   setPasswordConfirmation: (password_confirmation: string) => void
 }
 
-const appStoreApi: StateCreator<AppState & AppActions> = (set, get) => ({
+const appStoreApi: StateCreator<
+  AppState & AppActions,
+  [['zustand/devtools', never]]
+> = (set, get) => ({
   name: '',
   email: '',
   password: '',
   passwordConfirmation: '',
-  setName: (name: string) => set((state) => ({ name: name })),
-  setEmail: (email: string) => set((state) => ({ email: email })),
-  setPassword: (password: string) => set((state) => ({ password: password })),
+  setName: (name: string) => set((state) => ({ name: name }), false, 'setName'),
+  setEmail: (email: string) =>
+    set((state) => ({ email: email }), false, 'setEmail'),
+  setPassword: (password: string) =>
+    set((state) => ({ password: password }), false, 'setPassword'),
   setPasswordConfirmation: (passwordConfirmation: string) =>
-    set((state) => ({ passwordConfirmation: passwordConfirmation })),
+    set(
+      (state) => ({ passwordConfirmation: passwordConfirmation }),
+      false,
+      'setPasswordConfirmation'
+    ),
 })
 
+// export const useAppStore = create<AppState & AppActions>()(
+//   persist(appStoreApi, { name: 'app-store', storage: jsonStorage })
+// )
+
 export const useAppStore = create<AppState & AppActions>()(
-  persist(appStoreApi, { name: 'app-store', storage: jsonStorage })
+  devtools(
+    persist(
+      appStoreApi,
+
+      {
+        name: 'app-store',
+        // storage: jsonStorage
+      }
+    )
+  )
 )
